@@ -17,3 +17,5 @@ You can select an icon to (TAP on icon)
 I've tested hammerjs lib to detect tap, doubletap and long press on touch device.
 I've got an issue on mobilebrowsers (chrome android/ios, safari ios, firefox ios) with the TAP to exit 'jiggle Mode'.
 It works fine until you delete an icon. therefor impossible to exit 'jiggle mode', Background Tap listener does not fire any more.
+
+Error occur only on mobile browsers. test.html works fine on desktop browsers (after icon deletion)
