@@ -142,8 +142,6 @@
 // 			    e.stopPropagation();
 		        
 		        if (e.target.classList.contains('eleve')) {
-			        
-			        // si n'a pas de classe ou la classe est 'over'-> c'est un article en over
 			        for (var i = 0; i < el.length; i++) {
 				       	el[i].classList.toggle('gigote');
 				       	el[i].querySelector('.eff').classList.toggle('visible');
@@ -156,7 +154,6 @@
 			
 			
 		    hammer.on('tap', function(e) {
-	 		    
 			    //e.preventDefault();
 		        if (delMode) {
 			        e.target.classList.remove('gigote');
