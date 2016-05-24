@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="fr">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="user-scalable=no, width=device-width, initial-scale=1, maximum-scale=1">
+		<meta name="apple-mobile-web-app-capable" content="yes">
+		<meta name="mobile-web-app-capable" content="yes">
+		<title>event.html</title>
+		<script src="js/hammer.min.js"></script>
+		<script src="js/propagating.js"></script>
+		<style>
+			* { margin:0; padding: 0; }
+			
+			body {
+				height: 100%;
+				width: 100%;
+				position: absolute;
+			}
+			#groupe {
+				width: 100%;
+				height: 100%;
+				position: absolute;
+				background: #ff6262;	
+			}
+			#groupe>p {
+				margin: 10px;
+				font-family: "Helvetica Neue", arial, sans-serif;
+			}
+			#groupe>p em {
+				color: white;
+				font-style: normal;
+			}
+			article {
+ 
+				position: relative;
+				width: 72px;
+				height: 72px;
+				margin: 20px;
+				border: 8px solid transparent;
+				background: red;
+				border-radius: 50%;
+				transition: all 300ms;
+				float: left;
+				background: url(medias/profil.svg) no-repeat;
+				background-color: white;
+				background-size: cover;
+				z-index: 2;
+			}
+			
+			.eff {
+				position: absolute;
+				width: 20px;
+				height: 20px;
+				font-variant-caps: normal;
+				font-size: 27px;
+				font-family: 'Helvetica Neue', arial, sans-serif;
+				font-weight: bold;
+				background-color: #fff;
+				line-height: 14px;
+				text-align: center;
+				display: none;
+				border-radius: 50%;
+				transform: rotate(45deg);
+				box-shadow: 0 0 4px rgba(0, 0, 0, 0.66);
+				margin-left: -6px;
+				margin-top: -6px;
+			}
+			.over {
+				border: 8px solid #fbf578;
+			}
+			.visible {
+				display:block;
+			}
+			
+			.gigote{
+			  animation: animationFrames linear .2s;
+			  animation-iteration-count: infinite;
+			  transform-origin: 50% 50%;
+			}
+			
+			@keyframes animationFrames{
+			  0%, 100%	 { transform:  rotate(0deg) ;}
+			  25%		 { transform:  rotate(5deg) ;}
+			  75%		 { transform:  rotate(-5deg) ;}
+			}
+		</style>
+	</head>
+	<body>
+		
+		<section id="groupe">
+			<p><em>TAP</em> [sélectionner élève], <em>DOUBLE TAP</em> [fiche élève]<br><em>APPUIE LONG</em> (sur élève) [mode gestion élève/s] - <em>TAP</em> (sur le fond) [quitter le mode]</p>
+			<article class='eleve' data-id="1"><p class="eff">+</p></article>
+			<article class='eleve' data-id="2"><p class="eff">+</p></article>
+			<article class='eleve' data-id="3"><p class="eff">+</p></article>
+		</section>
+	</body>
+	<script>
+		var el = document.querySelectorAll('article.eleve');
+		
+		var singleTap, doubleTap, tripleTap, press;
+		var delMode = false;
+		
+		var hammerBody = propagating(new Hammer(document.querySelector("#groupe")));
+// 		var hammerBody = new Hammer(document.querySelector("#groupe"));
+		var tapBody = new Hammer.Tap({domEvents: true});//
+		hammerBody.add([tapBody]);//, 
+		
+		var userAgent = navigator.userAgent || navigator.vendor || window.opera;
+
+		/* gestion caca de la sortie du Mode Del en fonction de la plateform (android/ios vs desktop) */
+			
+		if( userAgent.match( /iPad/i ) || userAgent.match( /iPhone/i ) || userAgent.match( /iPod/i ) || userAgent.match( /Android/i ) ) {
+			// sous android ou ios
+			hammerBody.on("hammer.input", function(ev) {
+				//console.log("hammerbody secret:",ev.pointers);
+				if (ev.pointers[0].target.id == 'groupe' && delMode) {
+					console.log('fond',ev.pointers);
+					console.log('sortie du mode DEL');
+					for (var i = 0; i < el.length; i++) {
+				       	el[i].classList.remove('gigote');
+				       	el[i].querySelector('.eff').classList.remove('visible');
+					}
+					delMode = false;
+				}
+			});
+		} else {
+			// pas sous android ou ios
+			hammerBody.on('tap', function(e) {
+				//e.stopPropagation();
+				console.log("tapbody");
+				if (delMode) {
+					console.log('sortie du mode DEL');
+					for (var i = 0; i < el.length; i++) {
+				       	el[i].classList.remove('gigote');
+				       	el[i].querySelector('.eff').classList.remove('visible');
+					}
+					delMode = false;
+				}
+			});
+		}
+
+		
+		for (var i = 0; i < el.length; i++) {
+			//console.log(i);
+			//delMode = false;
+		    var hammer = propagating(new Hammer(el[i], {recognizers: []}));
+// 		    var hammer = new Hammer(el[i], {recognizers: []});
+			
+		     singleTap = new Hammer.Tap({domEvents: true});//{domEvents: true}
+		     doubleTap = new Hammer.Tap({event: 'doubleTap', taps: 2, interval: 500 });
+		     tripleTap = new Hammer.Tap({event: 'tripleTap', taps: 3 });
+		     press = new Hammer.Press({event: 'press', time:1000});
+		
+		    hammer.add([tripleTap, doubleTap, singleTap]);
+		    hammer.add([press]);
+		
+			doubleTap.recognizeWith(singleTap, tapBody);
+	
+			singleTap.requireFailure([doubleTap, tapBody]);
+		
+	
+		    hammer.on('press', function(e) {
+			    e.stopPropagation();
+		        el = document.querySelectorAll('article.eleve');
+		        if (e.target.classList.contains('eleve')) {
+			        
+			        // si n'a pas de classe ou la classe est 'over'-> c'est un article en over
+			        for (var i = 0; i < el.length; i++) {
+				       	el[i].classList.toggle('gigote');
+				       	el[i].querySelector('.eff').classList.toggle('visible');
+			       	}
+			       	delMode = !delMode;
+			       	console.log("PRESSS 'eleve': Mode DEL: "+delMode);
+		       	}
+		    });
+			
+			
+			
+		    hammer.on('tap', function(e) {
+			    //e.preventDefault();
+		        if (delMode) {
+			        e.target.classList.remove('gigote');
+			        if (e.target.classList.contains('eleve')) {
+				        // clic sur un article
+				        e.target.style.display = 'none';
+// 			        	e.target.parentNode.removeChild(e.target);
+			        	console.log('efface: '+e.target.className+" "+e.target.dataset.id);
+			        } else if (e.target.classList.contains('eff') ) {
+				        // clic sur la croix
+				        e.target.parentNode.style.display = 'none';
+// 				        e.target.parentNode.parentNode.removeChild(e.target.parentNode);
+				        console.log('efface2: '+e.target.parentNode.className+" "+e.target.parentNode.dataset.id);
+				    } else {
+					    console.log("ce n'est ni un article/eleve ni une croix");
+					    console.log(e.target.className,e.target);
+				    }
+				    if (document.querySelectorAll('.eleve').length==0) {
+					    // quitte le mode DEL, il n'y a plus d'élèves dans la liste
+					    delMode = false;
+					    console.log("sortie du Mode DEL, plus d'élève");
+				    }
+			    } else {
+				    console.log("tap "+ e.target.className);
+			       	if (e.target.classList.contains('eleve')) {
+				       	e.target.classList.toggle('over');
+			       	}
+		       	}
+		       	el = document.querySelectorAll('article.eleve');
+// 		       	console.log(document.querySelector('#groupe'),hammerBody);
+ 		       	e.stopPropagation();
+ 		       	// si absent (bubbling) hammerBody fired before the tap on the <article>
+		    });
+		    hammer.on('doubleTap', function(e) {
+			    if (!delMode) {
+		        	console.log("doubleTap");
+		        	console.log("élève N°"+e.target.dataset.id);
+		        }
+// 		        e.stopPropagation();
+		    });
+	    }
+	</script>
+</html>
