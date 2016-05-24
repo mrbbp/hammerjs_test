@@ -4,9 +4,9 @@ for a personnal webapp, to minimise bouton on the screen, i would like to reprod
 I need the ability to select an icon, and use double tap on each icon to have infos.
 
 **deletion of app.**
-LONG PRESS to enter in 'jiggle Mode'
-TAP for delete icon
-TAP on background to stop 'jiggle Mode'
+**LONG PRESS** to enter in 'jiggle Mode'
+**TAP** for delete icon
+**TAP** on background to stop 'jiggle Mode'
 
 You can select an icon to (TAP on icon)
 
